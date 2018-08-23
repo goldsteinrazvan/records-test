@@ -7,6 +7,11 @@ var bodyParser = require('body-parser');
 var expressValidator = require('express-validator')
 var cors = require('cors')
 
+var session = require('express-session')
+var redis = require('redis')
+var RedisStore = require('connect-redis')(session)
+var client = redis.createClient()
+
 var api = require('./routes/api');
 
 var app = express();
@@ -24,6 +29,18 @@ var conn = require('./connections/db-connect')
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  store: new RedisStore({
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    client: client,
+    ttl: 250
+  }),
+  saveUninitialized: false,
+  resave: false
+}))
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(expressValidator())
