@@ -1,6 +1,6 @@
 module.exports = {
 
-    client: 'mysql',
+    client: 'pg',
     connection: {
       host:     process.env.RDS_HOSTNAME,
       database: process.env.RDS_DB_NAME,

@@ -1,6 +1,6 @@
 //knex
 var knex = require('knex')({
-        client   : 'mysql',
+        client   : 'pg',
             connection : {
                         host     : process.env.RDS_HOSTNAME,
                                 user     : process.env.RDS_USERNAME,
