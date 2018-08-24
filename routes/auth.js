@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();
 var bcrypt = require('bcrypt')
 
-var User = require('../models/user');
 var connection = require('../connections/db-connect')
 var knex = connection.db
 
