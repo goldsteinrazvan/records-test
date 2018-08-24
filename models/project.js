@@ -12,3 +12,5 @@ var Project = connection.orm.Model.extend({
 Project.prototype.toPublic = function(){
     return { id: this.get('id'), name: this.get('name'), description: this.get('description'), user_id: this.get('user_id')}
 }
+
+module.exports = Project
