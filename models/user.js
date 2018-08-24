@@ -1,7 +1,7 @@
 var connection = require('../connections/db-connect');
 
 var User = connection.orm.Model.extend({
-    table: 'users'
+    tableName: 'users'
 })
 
 User.prototype.toPublic = function(){
