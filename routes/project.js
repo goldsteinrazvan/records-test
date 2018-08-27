@@ -52,9 +52,45 @@ router.post('/projects', (req, res)=>{
     
 })
 
+router.put('/projects/:id', (req, res) =>{
+    User.where( {id: req.query.user_id} ).fetch()
+    .then( (user) =>{
+        if( !user ){
+            throw NormalError.create('Error: could not get user')
+        }
+
+        var info = {}
+
+        if(req.body.name){
+            info.name = req.body.name
+        }
+
+        if(req.body.description){
+            info.description = req.body.description
+        }
+
+        return Project.where( {id: req.params.id, user_id: req.query.user_id} ).save( info, {patch:true} ) 
+    })
+    .then( (project) =>{
+        if( !project ){
+            throw NormalError.create('Error: could not find project')
+        }
+        res.send('Project updated')
+    })
+    .catch( (reason) =>{
+        if( reason.send_message )
+        {
+            res.status(500).send({errors:reason.message})
+            return
+        }
+
+        console.log('Failed to update project')
+        console.log(reason)
+        res.status(500).send({'errors':[{'msg':'Updating project failed. Try again.'}]})
+    })
+})
+
 router.get('/projects', (req, res)=>{
-    var project_info = {}
-   
     User.where( {id: req.query.user_id} ).fetch()
         .then( (user) =>{
             if( !user ){
@@ -124,7 +160,7 @@ router.delete('/projects/:id', (req, res) =>{
         if( !user ){
             throw NormalError.create('Error: could not get user')
         }
-        
+
         var isAdmin = user.get("isAdmin")
 
         if(isAdmin){
