@@ -74,19 +74,44 @@ router.get('/projects', (req, res)=>{
         })
         .catch( (reason) =>{
             if( reason.send_message )
+            {
+                res.status(500).send({errors:reason.message})
+                return
+            }
+
+            console.log('Failed getting project')
+            console.log(reason)
+            res.status(500).send({'errors':[{'msg':'Getting project failed. Try again.'}]})
+        })
+})
+
+router.get('/projects/:id', (req, res) =>{
+    User.where( {id: req.query.user_id} ).fetch()
+    .then( (user) =>{
+        if( !user ){
+            throw NormalError.create('Error: could not get user')
+        }
+        
+        return Project.where( {id: req.params.id, user_id: req.query.user_id} ).fetch()
+    })
+    .then( (project) =>{
+        if( !project ){
+            throw NormalError.create('Error: could not find project')
+        }
+
+        res.send(project)
+    })
+    .catch( (reason) =>{
+        if( reason.send_message )
         {
-        	res.status(500).send({errors:reason.message})
-        	return
+            res.status(500).send({errors:reason.message})
+            return
         }
 
         console.log('Failed getting project')
         console.log(reason)
         res.status(500).send({'errors':[{'msg':'Getting project failed. Try again.'}]})
-        })
-})
-
-router.get('/projects/:id', (req, res) =>{
-    
+    })
 })
 
 module.exports = router
