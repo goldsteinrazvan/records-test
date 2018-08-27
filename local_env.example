@@ -1,0 +1,23 @@
+RDS_HOSTNAME=database_host
+RDS_USERNAME=database_username
+RDS_PASSWORD=database_password
+RDS_DB_NAME=database_name
+REDIS_HOST=redis_host
+REDIS_PORT=redis_port
+ADMIN_EMAIL=example@youremail.com
+ADMIN_USERNAME=admin_username
+ADMIN_PASSWORD=admin_password
+HOST=application_host_address
+SESSION_SECRET=random_session_secret
+
+export RDS_HOSTNAME
+export RDS_USERNAME
+export RDS_PASSWORD
+export RDS_DB_NAME
+export REDIS_HOST
+export REDIS_PORT
+export ADMIN_EMAIL
+export ADMIN_USERNAME
+export ADMIN_PASSWORD
+export HOST
+export SESSION_SECRET
