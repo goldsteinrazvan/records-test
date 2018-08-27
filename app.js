@@ -12,6 +12,8 @@ var redis = require('redis')
 var RedisStore = require('connect-redis')(session)
 var client = redis.createClient()
 
+var passport = require('passport');
+
 var api = require('./routes/api');
 
 var app = express();
@@ -29,6 +31,11 @@ var conn = require('./connections/db-connect')
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(expressValidator())
+app.use(cookieParser());
 app.use(session({
   secret: process.env.SESSION_SECRET,
   store: new RedisStore({
@@ -40,11 +47,9 @@ app.use(session({
   saveUninitialized: false,
   resave: false
 }))
+app.use(passport.initialize())
+app.use(passport.session())
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(expressValidator())
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors())
 
