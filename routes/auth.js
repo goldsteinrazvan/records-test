@@ -5,6 +5,9 @@ var bcrypt = require('bcrypt')
 var connection = require('../connections/db-connect')
 var knex = connection.db
 
+var authHelpers = require('../utils/auth_helpers')
+var passport = require('../utils/local')
+
 var NormalError = require('../utils/error')
 
 router.post('/register', (req, res)=>{
@@ -48,6 +51,29 @@ router.post('/register', (req, res)=>{
         res.status(500).send({'errors':[{'msg':'Adding user failed. Try again.'}]})
     })
    
+})
+
+router.post('/login', (req, res, next) =>{
+    passport.authenticate('local', (err, user, info) =>{
+        if( err ){
+            res.status(500).send('error')
+        }
+
+        if( !user ){
+            res.status(404).send('User not found')
+        }
+
+        if(user){
+            req.logIn(user, (err) =>{
+                if(err){
+                    res.status(500).send('error')
+                }
+
+                res.status(200).send('success')
+            })
+        }
+
+    })(req, res, next)
 })
 
 module.exports = router
