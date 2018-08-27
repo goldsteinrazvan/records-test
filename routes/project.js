@@ -91,15 +91,53 @@ router.get('/projects/:id', (req, res) =>{
         if( !user ){
             throw NormalError.create('Error: could not get user')
         }
-        
+        var isAdmin = user.get("isAdmin")
+
+        if(isAdmin){
+            return Project.where( {id: req.params.id} ).fetch()
+        }
+
         return Project.where( {id: req.params.id, user_id: req.query.user_id} ).fetch()
     })
     .then( (project) =>{
         if( !project ){
             throw NormalError.create('Error: could not find project')
         }
-
         res.send(project)
+    })
+    .catch( (reason) =>{
+        if( reason.send_message )
+        {
+            res.status(500).send({errors:reason.message})
+            return
+        }
+
+        console.log('Failed getting project')
+        console.log(reason)
+        res.status(500).send({'errors':[{'msg':'Getting project failed. Try again.'}]})
+    })
+})
+
+router.delete('/projects/:id', (req, res) =>{
+    User.where( {id: req.query.user_id} ).fetch()
+    .then( (user) =>{
+        if( !user ){
+            throw NormalError.create('Error: could not get user')
+        }
+        
+        var isAdmin = user.get("isAdmin")
+
+        if(isAdmin){
+            return Project.where( {id: req.params.id} ).destroy()
+        }
+
+        return Project.where( {id: req.params.id, user_id: req.query.user_id} ).destroy()
+    })
+    .then( (project) =>{
+        if( !project ){
+            throw NormalError.create('Error: could not find project')
+        }
+        res.send('Project Deleted')
     })
     .catch( (reason) =>{
         if( reason.send_message )
