@@ -1,13 +1,14 @@
 var express = require('express');
 var router = express.Router();
 
-var connection = require('../connections/db-connect')
 var NormalError = require('../utils/error')
 
 var Project = require('../models/project')
 var User = require('../models/user')
 
-router.post('/projects', (req, res)=>{
+var authHelpers = require('../utils/auth_helpers')
+
+router.post('/projects', authHelpers.loginRequired, (req, res, next)=>{
     req.checkBody('name', 'Missing project name').notEmpty()
     req.checkBody('description', 'Missing project description').notEmpty()
     req.checkBody('user_id', 'Missing user id').notEmpty()
@@ -16,7 +17,7 @@ router.post('/projects', (req, res)=>{
             throw NormalError.create('Error: Project not created')
         }
 
-        User.where( {id: req.body.user_id} ).fetch()
+        User.where( {id: req.user.id} ).fetch()
             .then( (user) =>{
                 if( !user ){
                     throw NormalError.create('Error: could not get user')
@@ -25,7 +26,7 @@ router.post('/projects', (req, res)=>{
                 var info = {}
                 info.name = req.body.name
                 info.description = req.body.description
-                info.user_id = req.body.user_id
+                info.user_id = req.user.id
 
                 return Project.forge(info).save()
             })
@@ -52,8 +53,8 @@ router.post('/projects', (req, res)=>{
     
 })
 
-router.put('/projects/:id', (req, res) =>{
-    User.where( {id: req.query.user_id} ).fetch()
+router.put('/projects/:id', authHelpers.loginRequired, (req, res, next) =>{
+    User.where( {id: req.user.id} ).fetch()
     .then( (user) =>{
         if( !user ){
             throw NormalError.create('Error: could not get user')
@@ -69,7 +70,7 @@ router.put('/projects/:id', (req, res) =>{
             info.description = req.body.description
         }
 
-        return Project.where( {id: req.params.id, user_id: req.query.user_id} ).save( info, {patch:true} ) 
+        return Project.where( {id: req.params.id, user_id: req.user.id} ).save( info, {patch:true} ) 
     })
     .then( (project) =>{
         if( !project ){
@@ -90,8 +91,8 @@ router.put('/projects/:id', (req, res) =>{
     })
 })
 
-router.get('/projects', (req, res)=>{
-    User.where( {id: req.query.user_id} ).fetch()
+router.get('/projects', authHelpers.loginRequired, (req, res, next)=>{
+    User.where( {id: req.user.id} ).fetch()
         .then( (user) =>{
             if( !user ){
                 throw NormalError.create('Error: could not get user')
@@ -102,7 +103,7 @@ router.get('/projects', (req, res)=>{
             if( isAdmin ){
                 return Project.fetchAll()
             } else {
-                return Project.where( {user_id: req.query.user_id} ).fetchAll()
+                return Project.where( {user_id: req.user.id} ).fetchAll()
             }
         })
         .then( (projects) =>{
@@ -121,8 +122,8 @@ router.get('/projects', (req, res)=>{
         })
 })
 
-router.get('/projects/:id', (req, res) =>{
-    User.where( {id: req.query.user_id} ).fetch()
+router.get('/projects/:id', authHelpers.loginRequired, (req, res, next) =>{
+    User.where( {id: req.user.id} ).fetch()
     .then( (user) =>{
         if( !user ){
             throw NormalError.create('Error: could not get user')
@@ -133,7 +134,7 @@ router.get('/projects/:id', (req, res) =>{
             return Project.where( {id: req.params.id} ).fetch()
         }
 
-        return Project.where( {id: req.params.id, user_id: req.query.user_id} ).fetch()
+        return Project.where( {id: req.params.id, user_id: req.user.id} ).fetch()
     })
     .then( (project) =>{
         if( !project ){
@@ -154,8 +155,8 @@ router.get('/projects/:id', (req, res) =>{
     })
 })
 
-router.delete('/projects/:id', (req, res) =>{
-    User.where( {id: req.query.user_id} ).fetch()
+router.delete('/projects/:id', authHelpers.loginRequired,  (req, res, next) =>{
+    User.where( {id: req.user.id} ).fetch()
     .then( (user) =>{
         if( !user ){
             throw NormalError.create('Error: could not get user')
@@ -167,12 +168,13 @@ router.delete('/projects/:id', (req, res) =>{
             return Project.where( {id: req.params.id} ).destroy()
         }
 
-        return Project.where( {id: req.params.id, user_id: req.query.user_id} ).destroy()
+        return Project.where( {id: req.params.id, user_id: req.user.id} ).destroy()
     })
     .then( (project) =>{
         if( !project ){
             throw NormalError.create('Error: could not find project')
         }
+
         res.send('Project Deleted')
     })
     .catch( (reason) =>{
