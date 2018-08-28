@@ -10,7 +10,7 @@ var passport = require('../utils/local')
 
 var NormalError = require('../utils/error')
 
-router.post('/register', (req, res)=>{
+router.post('/register', authHelpers.loginRedirect, (req, res, next)=>{
     req.checkBody('username', 'Missing user name').notEmpty()
     req.checkBody('email', 'Missing email address').notEmpty()
     req.checkBody('password', 'Missing password').notEmpty()
@@ -53,7 +53,7 @@ router.post('/register', (req, res)=>{
    
 })
 
-router.post('/login', (req, res, next) =>{
+router.post('/login', authHelpers.loginRedirect, (req, res, next) =>{
     passport.authenticate('local', (err, user, info) =>{
         if( err ){
             res.status(500).send('error')
