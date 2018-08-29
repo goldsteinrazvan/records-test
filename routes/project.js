@@ -11,7 +11,6 @@ var authHelpers = require('../utils/auth_helpers')
 router.post('/projects', authHelpers.loginRequired, (req, res, next)=>{
     req.checkBody('name', 'Missing project name').notEmpty()
     req.checkBody('description', 'Missing project description').notEmpty()
-    req.checkBody('user_id', 'Missing user id').notEmpty()
     req.getValidationResult().then( (result) =>{
         if( !result.isEmpty() ){
             throw NormalError.create('Error: Project not created')
