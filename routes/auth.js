@@ -37,7 +37,7 @@ router.post('/register', authHelpers.loginRedirect, (req, res, next)=>{
             throw NormalError.create('Error: User not created')
         }
 
-        res.send('User created')
+        res.send('User created. Please log in.')
     })
     .catch( (reason) =>{
         if( reason.send_message )
