@@ -18,6 +18,8 @@ var api = require('./routes/api');
 
 var app = express();
 
+var worker = require('./utils/worker')
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
@@ -75,5 +77,7 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.send({errors:[{msg:'An error occured'}]});
 });
+
+worker.consumeMessage()
 
 module.exports = app;

@@ -8,6 +8,8 @@ var User = require('../models/user')
 
 var authHelpers = require('../utils/auth_helpers')
 
+var feeder = require('../utils/send')
+
 router.post('/projects', authHelpers.loginRequired, (req, res, next)=>{
     req.checkBody('name', 'Missing project name').notEmpty()
     req.checkBody('description', 'Missing project description').notEmpty()
@@ -16,13 +18,14 @@ router.post('/projects', authHelpers.loginRequired, (req, res, next)=>{
             throw NormalError.create('Error: Project not created')
         }
 
+        var info = {}
+
         User.where( {id: req.user.id} ).fetch()
             .then( (user) =>{
                 if( !user ){
                     throw NormalError.create('Error: could not get user')
                 }
 
-                var info = {}
                 info.name = req.body.name
                 info.description = req.body.description
                 info.user_id = req.user.id
@@ -33,6 +36,8 @@ router.post('/projects', authHelpers.loginRequired, (req, res, next)=>{
                 if( !result ){
                     throw NormalError.create('Error: could not create project')
                 }
+                
+                feeder.sendToQueue(info)
 
                 res.send('Project Created')
             })
