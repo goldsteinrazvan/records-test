@@ -14,7 +14,6 @@ var feeder = require('../utils/send')
 router.post('/projects', authHelpers.loginRequired, (req, res, next)=>{
     var info = {}
     req.checkBody('name', 'Missing project name').notEmpty()
-    req.checkBody('description', 'Missing project description').notEmpty()
     req.getValidationResult()
         .then( (result) =>{
             if( !result.isEmpty() ){
@@ -29,7 +28,11 @@ router.post('/projects', authHelpers.loginRequired, (req, res, next)=>{
             }
 
             info.name = req.body.name
-            info.description = req.body.description
+
+            if(req.body.description){
+                info.description = req.body.description
+            }
+            
             info.user_id = req.user.id
 
             return Project.forge(info).save()
@@ -73,10 +76,8 @@ router.put('/projects/:id', authHelpers.loginRequired, (req, res, next) =>{
         if(req.body.name){
             info.name = req.body.name
         }
-
-        if(req.body.description){
-            info.description = req.body.description
-        }
+        
+        info.description = req.body.description
 
         return Project.where( {id: req.params.id, user_id: req.user.id} ).save( info, {patch:true} ) 
     })
