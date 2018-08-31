@@ -57,14 +57,19 @@ router.post('/projects', authHelpers.loginRequired, (req, res, next)=>{
 })
 
 router.put('/projects/:id', authHelpers.loginRequired, (req, res, next) =>{
+   
     User.where( {id: req.user.id} ).fetch()
     .then( (user) =>{
         if( !user ){
             throw NormalError.create('Error: could not get user')
         }
-
+        
         var info = {}
 
+        if(!req.body.name && !req.body.description){
+            throw NormalError.create('Error: no values to update were sent.')
+        }
+        
         if(req.body.name){
             info.name = req.body.name
         }
