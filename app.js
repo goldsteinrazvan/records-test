@@ -78,6 +78,6 @@ app.use(function(err, req, res, next) {
   res.send({errors:[{msg:'An error occured'}]});
 });
 
-worker.consumeMessage()
+//worker.consumeMessage()
 
 module.exports = app;

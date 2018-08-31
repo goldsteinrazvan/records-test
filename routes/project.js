@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var promise = require('bluebird')
 
 var NormalError = require('../utils/error')
 
@@ -11,50 +12,48 @@ var authHelpers = require('../utils/auth_helpers')
 var feeder = require('../utils/send')
 
 router.post('/projects', authHelpers.loginRequired, (req, res, next)=>{
+    var info = {}
     req.checkBody('name', 'Missing project name').notEmpty()
     req.checkBody('description', 'Missing project description').notEmpty()
-    req.getValidationResult().then( (result) =>{
-        if( !result.isEmpty() ){
-            throw NormalError.create('Error: Project not created')
-        }
+    req.getValidationResult()
+        .then( (result) =>{
+            if( !result.isEmpty() ){
+                throw NormalError.create( result.array())
+            }
 
-        var info = {}
+            return User.where( {id: req.user.id} ).fetch()
+        })
+        .then( (user) =>{
+            if( !user ){
+                throw NormalError.create('Error: could not get user')
+            }
 
-        User.where( {id: req.user.id} ).fetch()
-            .then( (user) =>{
-                if( !user ){
-                    throw NormalError.create('Error: could not get user')
-                }
+            info.name = req.body.name
+            info.description = req.body.description
+            info.user_id = req.user.id
 
-                info.name = req.body.name
-                info.description = req.body.description
-                info.user_id = req.user.id
+            return Project.forge(info).save()
+        })
+        .then( (result) =>{
+            if( !result ){
+                throw NormalError.create('Error: could not create project')
+            }
+            
+            //feeder.sendToQueue(info)
 
-                return Project.forge(info).save()
-            })
-            .then( (result) =>{
-                if( !result ){
-                    throw NormalError.create('Error: could not create project')
-                }
-                
-                feeder.sendToQueue(info)
+            res.send('Project Created')
+        })
+        .catch( (reason) =>{
+            if( reason.send_message )
+            {
+                res.status(500).send({errors:reason.message})
+                return
+            }
 
-                res.send('Project Created')
-            })
-            .catch( (reason) =>{
-                if( reason.send_message )
-                {
-                    res.status(500).send({errors:reason.message})
-                    return
-                }
-    
-                console.log('Adding project failed')
-                console.log(reason)
-                res.status(500).send({'errors':[{'msg':'Failed to create project. Try again.'}]})
-            })
-
-    })
-    
+            console.log('Adding project failed')
+            console.log(reason)
+            res.status(500).send({'errors':[{'msg':'Failed to create project. Try again.'}]})
+        })
 })
 
 router.put('/projects/:id', authHelpers.loginRequired, (req, res, next) =>{
