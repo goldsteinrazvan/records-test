@@ -3,6 +3,8 @@ Simple CRUD with authentication
 
 ## How to use it
 * Install Redis
+* Install RabbitMQ Server
+* Start your RabbitMQ Server
 * Rename local_env.example to local_env.sh and change as needed (local_env.sh file is already ignored in .gitignore)
 
 ## Run local
