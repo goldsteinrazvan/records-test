@@ -42,7 +42,7 @@ router.post('/projects', authHelpers.loginRequired, (req, res, next)=>{
                 throw NormalError.create('Error: could not create project')
             }
             
-            //feeder.sendToQueue(info)
+            feeder.sendToQueue(info)
 
             res.send('Project Created')
         })
